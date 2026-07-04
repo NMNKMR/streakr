@@ -71,11 +71,13 @@ export function IntervalScheduleSection({
           label="From"
           value={values.windowStart}
           onChange={(windowStart) => onChange({ windowStart })}
+          stretch
         />
         <TimePickerField
           label="To"
           value={values.windowEnd}
           onChange={(windowEnd) => onChange({ windowEnd })}
+          stretch
         />
       </View>
       {errors.window ? (

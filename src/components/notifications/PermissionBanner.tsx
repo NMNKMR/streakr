@@ -1,18 +1,16 @@
+import { GlassCard } from "@/components/ui/GlassCard";
 import { radius, spacing } from "@/constants/spacing";
 import { typography } from "@/constants/typography";
+import { usePermission } from "@/hooks/use-permission";
 import { useTheme } from "@/providers/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
-
-import { GlassCard } from "@/components/ui/GlassCard";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export function PermissionBanner() {
   const { colors } = useTheme();
+  const { isDenied, isLoading, openSettings } = usePermission();
 
-  // TODO(phase-4): wire to usePermission() — user-owned
-  const isDenied = true;
-
-  if (!isDenied) return null;
+  if (isLoading || !isDenied) return null;
 
   return (
     <GlassCard padding={14} style={styles.card}>
@@ -25,10 +23,10 @@ export function PermissionBanner() {
             Notifications are off
           </Text>
           <Text style={[typography.labelSm, { color: colors.textMuted }]}>
-            Enable them to stay on track with reminders.
+            Enable them in Settings to receive habit reminders.
           </Text>
         </View>
-        <Pressable onPress={() => Linking.openSettings()}>
+        <Pressable onPress={openSettings} hitSlop={8}>
           <Text style={[typography.labelSm, { color: colors.tertiaryContainer }]}>
             Open Settings
           </Text>

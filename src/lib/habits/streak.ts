@@ -12,7 +12,7 @@ function minutesToTime(minutes: number): TimeOfDay {
   };
 }
 
-function expandIntervalTimes(
+export function expandIntervalTimes(
   recurrence: Extract<Recurrence, { kind: "interval" }>,
 ): TimeOfDay[] {
   const start = timeToMinutes(recurrence.windowStart);

@@ -1,9 +1,13 @@
+import {
+  EMOJI_PICKER_SNAP_POINTS,
+  GlassBottomSheet,
+} from "@/components/ui/GlassBottomSheet";
 import { HABIT_EMOJIS } from "@/constants/habit-emojis";
 import { radius, spacing } from "@/constants/spacing";
 import { typography } from "@/constants/typography";
 import { useTheme } from "@/providers/theme";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 type EmojiPickerSheetProps = {
   visible: boolean;
@@ -19,63 +23,59 @@ export function EmojiPickerSheet({
   onClose,
 }: EmojiPickerSheetProps) {
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
+
+  if (!visible) return null;
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} />
-      <View
+    <GlassBottomSheet
+      visible
+      onClose={onClose}
+      snapPoints={EMOJI_PICKER_SNAP_POINTS}
+    >
+      <Text
         style={[
-          styles.sheet,
-          {
-            backgroundColor: colors.surfaceContainerHigh,
-            paddingBottom: insets.bottom + spacing.md,
-          },
+          typography.labelMd,
+          styles.title,
+          { color: colors.onBackground },
         ]}
       >
-        <Text style={[typography.labelMd, styles.title, { color: colors.onBackground }]}>
-          Choose an emoji
-        </Text>
-        <ScrollView contentContainerStyle={styles.grid} showsVerticalScrollIndicator={false}>
-          {HABIT_EMOJIS.map((emoji) => {
-            const active = emoji === selected;
-            return (
-              <Pressable
-                key={emoji}
-                onPress={() => {
-                  onSelect(emoji);
-                  onClose();
-                }}
-                style={[
-                  styles.tile,
-                  {
-                    backgroundColor: active ? colors.primaryContainer : colors.glassSurface,
-                    borderColor: active ? colors.primaryContainer : colors.glassBorder,
-                  },
-                ]}
-              >
-                <Text style={styles.emoji}>{emoji}</Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
-    </Modal>
+        Choose an emoji
+      </Text>
+      <BottomSheetScrollView
+        contentContainerStyle={styles.grid}
+        showsVerticalScrollIndicator={false}
+      >
+        {HABIT_EMOJIS.map((emoji) => {
+          const active = emoji === selected;
+          return (
+            <Pressable
+              key={emoji}
+              onPress={() => {
+                onSelect(emoji);
+                onClose();
+              }}
+              style={[
+                styles.tile,
+                {
+                  backgroundColor: active
+                    ? "rgba(255, 122, 0, 0.18)"
+                    : colors.glassSurface,
+                  borderColor: active
+                    ? colors.primaryContainer
+                    : colors.glassBorder,
+                },
+              ]}
+            >
+              <Text style={styles.emoji}>{emoji}</Text>
+            </Pressable>
+          );
+        })}
+      </BottomSheetScrollView>
+    </GlassBottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  sheet: {
-    maxHeight: "55%",
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    paddingTop: spacing.lg,
-    paddingHorizontal: spacing.md,
-  },
   title: {
     marginBottom: spacing.md,
     textAlign: "center",
@@ -84,7 +84,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.lg,
+    justifyContent: "center",
   },
   tile: {
     width: 52,

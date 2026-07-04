@@ -1,17 +1,86 @@
+import { FormSectionLabel } from "@/components/ui/FormSectionLabel";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { ScreenBackground } from "@/components/ui/ScreenBackground";
-import { spacing } from "@/constants/spacing";
+import { radius, spacing } from "@/constants/spacing";
 import { typography } from "@/constants/typography";
+import { usePermission } from "@/hooks/use-permission";
 import { useTheme } from "@/providers/theme";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
+import { LinearGradient } from "expo-linear-gradient";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { GlassCard } from "@/components/ui/GlassCard";
-
 const THEME_OPTIONS = ["system", "dark", "light"] as const;
+const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
+
+const THEME_ICONS: Record<(typeof THEME_OPTIONS)[number], keyof typeof Ionicons.glyphMap> = {
+  system: "phone-portrait-outline",
+  dark: "moon-outline",
+  light: "sunny-outline",
+};
+
+function notificationStatusCopy(
+  status: ReturnType<typeof usePermission>["status"],
+): { label: string; detail: string; tone: "success" | "warning" | "error" | "neutral" } {
+  switch (status) {
+    case "loading":
+      return {
+        label: "Checking…",
+        detail: "Reading notification permission from your device.",
+        tone: "neutral",
+      };
+    case "granted":
+      return {
+        label: "Enabled",
+        detail: "Reminders schedule when you save habits with times.",
+        tone: "success",
+      };
+    case "undetermined":
+      return {
+        label: "Not enabled",
+        detail: "Allow notifications to receive habit reminders.",
+        tone: "warning",
+      };
+    case "denied":
+      return {
+        label: "Disabled",
+        detail: "Enable notifications in system settings to get reminders.",
+        tone: "error",
+      };
+  }
+}
 
 export default function SettingsScreen() {
   const { colors, mode, toggleTheme, isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
+  const {
+    status,
+    isLoading,
+    isGranted,
+    isDenied,
+    isUndetermined,
+    requestPermission,
+    openSettings,
+  } = usePermission();
+
+  const { label, detail, tone } = notificationStatusCopy(status);
+
+  const statusColor =
+    tone === "success"
+      ? colors.primaryContainer
+      : tone === "error"
+        ? colors.error
+        : tone === "warning"
+          ? colors.warning
+          : colors.textSubtle;
 
   return (
     <ScreenBackground>
@@ -23,60 +92,141 @@ export default function SettingsScreen() {
             paddingBottom: spacing.bottomChromeHeight + insets.bottom,
           },
         ]}
+        showsVerticalScrollIndicator={false}
       >
         <Text style={[typography.headlineLgMobile, { color: colors.onBackground }]}>
           Settings
         </Text>
-        <Text style={[typography.bodyMd, { color: colors.textMuted, marginBottom: spacing.lg }]}>
+        <Text style={[typography.bodyMd, styles.subtitle, { color: colors.textMuted }]}>
           Tune Streakr to your rhythm.
         </Text>
 
+        <FormSectionLabel>Appearance</FormSectionLabel>
         <GlassCard style={styles.card}>
-          <Text style={[typography.labelMd, { color: colors.onSurface, marginBottom: spacing.sm }]}>
-            Appearance
-          </Text>
-          <View style={styles.themeRow}>
+          <View
+            style={[
+              styles.themeTrack,
+              {
+                backgroundColor: colors.glassSurface,
+                borderColor: colors.glassBorder,
+              },
+            ]}
+          >
             {THEME_OPTIONS.map((option) => {
-              const selected = mode === option;
+              const active = mode === option;
               return (
                 <Pressable
                   key={option}
                   onPress={() => toggleTheme(option)}
-                  style={[
-                    styles.themeChip,
-                    {
-                      backgroundColor: selected
-                        ? colors.primaryContainer
-                        : colors.glassSurface,
-                      borderColor: selected ? colors.primary : colors.glassBorder,
-                    },
-                  ]}
+                  style={styles.themeSegmentPressable}
                 >
-                  <Text
-                    style={[
-                      typography.labelSm,
-                      {
-                        color: selected ? colors.onPrimary : colors.textMuted,
-                        textTransform: "capitalize",
-                      },
-                    ]}
-                  >
-                    {option}
-                  </Text>
+                  {active ? (
+                    <LinearGradient
+                      colors={[colors.primaryContainer, colors.tertiaryContainer]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.themeSegmentActive}
+                    >
+                      <Ionicons
+                        name={THEME_ICONS[option]}
+                        size={16}
+                        color={colors.onPrimary}
+                      />
+                      <Text
+                        style={[typography.labelSm, { color: colors.onPrimary, textTransform: "capitalize" }]}
+                      >
+                        {option}
+                      </Text>
+                    </LinearGradient>
+                  ) : (
+                    <View style={styles.themeSegmentInactive}>
+                      <Ionicons
+                        name={THEME_ICONS[option]}
+                        size={16}
+                        color={colors.textMuted}
+                      />
+                      <Text
+                        style={[typography.labelSm, { color: colors.textMuted, textTransform: "capitalize" }]}
+                      >
+                        {option}
+                      </Text>
+                    </View>
+                  )}
                 </Pressable>
               );
             })}
           </View>
-          <Text style={[typography.labelSm, { color: colors.textSubtle, marginTop: spacing.sm }]}>
+          <Text style={[typography.labelSm, styles.themeHint, { color: colors.textSubtle }]}>
             Active palette: {isDarkMode ? "dark" : "light"}
           </Text>
         </GlassCard>
 
+        <FormSectionLabel>Notifications</FormSectionLabel>
         <GlassCard style={styles.card}>
-          <Text style={[typography.labelMd, { color: colors.onSurface }]}>Notifications</Text>
-          <Text style={[typography.bodyMd, { color: colors.textMuted, marginTop: spacing.sm }]}>
-            {/* TODO(phase-4): permission status + push token — user-owned */}
-            Notification settings will appear here once the notification layer is wired up.
+          <View style={styles.notificationRow}>
+            <View style={[styles.iconCircle, { backgroundColor: colors.glassSurface }]}>
+              <Ionicons name="notifications-outline" size={20} color={colors.primary} />
+            </View>
+
+            <View style={styles.notificationCopy}>
+              <Text style={[typography.labelMd, { color: colors.onSurface }]}>Reminders</Text>
+              <Text style={[typography.bodyMd, { color: colors.textMuted }]}>{detail}</Text>
+            </View>
+
+            <View style={[styles.statusPill, { backgroundColor: `${statusColor}22` }]}>
+              {isLoading ? (
+                <ActivityIndicator size="small" color={statusColor} />
+              ) : (
+                <>
+                  <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+                  <Text style={[typography.labelXs, { color: statusColor }]}>{label}</Text>
+                </>
+              )}
+            </View>
+          </View>
+
+          {isUndetermined ? (
+            <Pressable
+              onPress={() => void requestPermission()}
+              style={[styles.actionButton, { backgroundColor: colors.primaryContainer }]}
+            >
+              <Text style={[typography.labelMd, { color: colors.onPrimary }]}>
+                Enable Notifications
+              </Text>
+            </Pressable>
+          ) : null}
+
+          {isDenied ? (
+            <Pressable
+              onPress={openSettings}
+              style={[styles.actionButton, styles.actionButtonOutline, { borderColor: colors.glassBorder }]}
+            >
+              <Ionicons name="settings-outline" size={16} color={colors.primary} />
+              <Text style={[typography.labelMd, { color: colors.primary }]}>Open System Settings</Text>
+            </Pressable>
+          ) : null}
+
+          {isGranted ? (
+            <View style={[styles.grantedNote, { backgroundColor: colors.glassSurface }]}>
+              <Ionicons name="checkmark-circle-outline" size={16} color={colors.primaryContainer} />
+              <Text style={[typography.labelSm, { color: colors.textMuted, flex: 1 }]}>
+                Local reminders are active. Push notifications coming soon.
+              </Text>
+            </View>
+          ) : null}
+        </GlassCard>
+
+        <FormSectionLabel>About</FormSectionLabel>
+        <GlassCard style={styles.aboutCard}>
+          <View style={styles.aboutRow}>
+            <Ionicons name="flame" size={28} color={colors.primaryContainer} />
+            <View>
+              <Text style={[typography.labelMd, { color: colors.onSurface }]}>Streakr</Text>
+              <Text style={[typography.labelSm, { color: colors.textSubtle }]}>v{APP_VERSION}</Text>
+            </View>
+          </View>
+          <Text style={[typography.bodyMd, { color: colors.textMuted }]}>
+            Build streaks, log habits, and stay on track — one tap at a time.
           </Text>
         </GlassCard>
       </ScrollView>
@@ -88,18 +238,102 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.marginMobile,
   },
+  subtitle: {
+    marginBottom: spacing.lg,
+  },
   card: {
     marginBottom: spacing.lg,
-    padding: spacing.lg,
   },
-  themeRow: {
+  themeTrack: {
     flexDirection: "row",
-    gap: spacing.sm,
-  },
-  themeChip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 9999,
+    borderRadius: radius.full,
     borderWidth: 1,
+    padding: 4,
+    gap: 4,
+  },
+  themeSegmentPressable: {
+    flex: 1,
+  },
+  themeSegmentActive: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: radius.full,
+  },
+  themeSegmentInactive: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: radius.full,
+  },
+  themeHint: {
+    marginTop: spacing.sm,
+  },
+  notificationRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.md,
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  notificationCopy: {
+    flex: 1,
+    gap: 4,
+    paddingTop: 2,
+  },
+  statusPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+    borderRadius: radius.full,
+    minWidth: 72,
+    justifyContent: "center",
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: radius.full,
+  },
+  actionButton: {
+    marginTop: spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.full,
+  },
+  actionButtonOutline: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+  },
+  grantedNote: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.md,
+  },
+  aboutCard: {
+    marginBottom: spacing.lg,
+    gap: spacing.md,
+  },
+  aboutRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
   },
 });

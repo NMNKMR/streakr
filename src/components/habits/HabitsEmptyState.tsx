@@ -1,42 +1,63 @@
+import { GlassCard } from "@/components/ui/GlassCard";
 import { radius, spacing } from "@/constants/spacing";
 import { typography } from "@/constants/typography";
 import { useTheme } from "@/providers/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
-import { Link } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
+import { Link } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-
-import { GlassCard } from "@/components/ui/GlassCard";
 
 type HabitsEmptyStateProps = {
   title?: string;
   description?: string;
   ctaLabel?: string;
+  icon?: keyof typeof Ionicons.glyphMap;
 };
 
 export function HabitsEmptyState({
   title = "Start Your Journey",
   description = "You haven't created any habits yet. Take the first step toward a better you.",
   ctaLabel = "Create First Habit",
+  icon = "sparkles-outline",
 }: HabitsEmptyStateProps) {
   const { colors } = useTheme();
 
   return (
     <View style={styles.wrapper}>
       <GlassCard padding={spacing.lg} style={styles.card}>
-        <View style={[styles.logoRing, { borderColor: colors.glassBorder }]}>
-          <Image
-            source={require("@/assets/icons/brand-logo.png")}
-            style={styles.logo}
-            contentFit="contain"
-          />
-        </View>
-        <Text style={[typography.headlineMd, styles.title, { color: colors.onSurface }]}>
+        <LinearGradient
+          colors={[colors.primaryContainer, colors.tertiaryContainer]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.iconRing}
+        >
+          <View
+            style={[
+              styles.iconInner,
+              { backgroundColor: colors.surfaceContainerHigh },
+            ]}
+          >
+            <Ionicons name={icon} size={30} color={colors.primary} />
+          </View>
+        </LinearGradient>
+
+        <Text
+          style={[
+            typography.headlineMd,
+            styles.title,
+            { color: colors.onSurface },
+          ]}
+        >
           {title}
         </Text>
-        <Text style={[typography.bodyMd, styles.description, { color: colors.textMuted }]}>
+        <Text
+          style={[
+            typography.bodyMd,
+            styles.description,
+            { color: colors.textMuted },
+          ]}
+        >
           {description}
         </Text>
         <Link href="/new" asChild>
@@ -74,24 +95,22 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     justifyContent: "center",
-    paddingVertical: spacing.xxl,
   },
   card: {
     alignItems: "center",
   },
-  logoRing: {
-    width: 88,
-    height: 88,
+  iconRing: {
+    width: 72,
+    height: 72,
     borderRadius: radius.full,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    alignItems: "center",
-    justifyContent: "center",
+    padding: 2,
     marginBottom: spacing.lg,
   },
-  logo: {
-    width: 48,
-    height: 48,
+  iconInner: {
+    flex: 1,
+    borderRadius: radius.full,
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
     textAlign: "center",

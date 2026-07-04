@@ -1,5 +1,10 @@
 import ThemedStatusBar from "@/components/ThemedStatusBar";
+import { useNotificationHandler } from "@/hooks/use-notification-handler";
 import { initDatabase } from "@/lib/habits/storage";
+import {
+  createAndroidChannel,
+  registerForegroundHandler,
+} from "@/lib/notifications/setup";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { useTheme } from "@/providers/theme";
@@ -18,7 +23,9 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useEffect, useState } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { View } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
@@ -48,27 +55,33 @@ export default function RootLayout() {
   if (!fontsLoaded || !dbReady) return null;
 
   return (
-    <QueryProvider>
-      <ThemeProvider>
-        <ThemedNavigation />
-      </ThemeProvider>
-    </QueryProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheetModalProvider>
+        <QueryProvider>
+          <ThemeProvider>
+            <ThemedNavigation />
+          </ThemeProvider>
+        </QueryProvider>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 }
 
 function ThemedNavigation() {
   const { colors } = useTheme();
 
+  useNotificationHandler();
+
   useEffect(() => {
     SystemUI.setBackgroundColorAsync(colors.background);
   }, [colors.background]);
 
-  // TODO(phase-4): notification bootstrap — user-owned
-  // 1. createAndroidChannel()
-  // 2. registerForegroundHandler()
-  // 3. registerTapHandler()
-  // 4. registerForPushNotifications()
-  // 5. getLastNotificationResponseAsync()
+  useEffect(() => {
+    void (async () => {
+      await createAndroidChannel();
+      registerForegroundHandler();
+    })();
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>

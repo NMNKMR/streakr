@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { addDays } from "./dates";
 import type { CompletionRecord, Habit, Recurrence, SkipRecord, TimeOfDay } from "./types";
 import {
   getDisplayStreak,
@@ -60,6 +61,27 @@ export function getIntervalReminderCount(recurrence: Extract<Recurrence, { kind:
   return Math.floor((end - start) / recurrence.everyMinutes) + 1;
 }
 
+/** Compact interval label for habit list cards, e.g. "Every 2h". */
+export function getIntervalScheduleShort(
+  recurrence: Extract<Recurrence, { kind: "interval" }>,
+): string {
+  const everyHours = recurrence.everyMinutes / 60;
+  const unit =
+    everyHours >= 1 && Number.isInteger(everyHours)
+      ? `${everyHours}h`
+      : `${recurrence.everyMinutes}m`;
+  return `Every ${unit}`;
+}
+
+const WEEKDAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+
+export function getWeeklyDaysLabel(recurrence: Extract<Recurrence, { kind: "weekly" }>): string {
+  return [...recurrence.weekdays]
+    .sort((a, b) => a - b)
+    .map((day) => WEEKDAY_NAMES[day])
+    .join(", ");
+}
+
 export function getWeekdayDots(recurrence: Extract<Recurrence, { kind: "weekly" }>): boolean[] {
   return WEEKDAY_LABELS.map((_, index) => recurrence.weekdays.includes(index));
 }
@@ -72,7 +94,19 @@ export function getTodayProgressLabel(
   if (habit.recurrence.kind !== "interval") return null;
   const total = getExpectedOccurrenceCount(habit.recurrence, today);
   if (total === 0) return null;
-  return `${completions.length} of ${total} glasses`;
+  return `${completions.length} of ${total} done`;
+}
+
+/** Compact interval progress for inline card meta, e.g. "2/9". */
+export function getTodayProgressShort(
+  habit: Habit,
+  today: string,
+  completions: CompletionRecord[],
+): string | null {
+  if (habit.recurrence.kind !== "interval") return null;
+  const total = getExpectedOccurrenceCount(habit.recurrence, today);
+  if (total === 0) return null;
+  return `${completions.length}/${total}`;
 }
 
 export function getNextOccurrenceTime(
@@ -99,6 +133,61 @@ export function getNextOccurrenceTime(
   return occurrences[0] ?? null;
 }
 
+/** Human-readable next reminder, including upcoming days when not scheduled today. */
+export function getNextReminderLabel(
+  habit: Habit,
+  today: string,
+  completions: CompletionRecord[],
+  skips: SkipRecord[],
+): string {
+  const expectedToday = getExpectedOccurrenceCount(habit.recurrence, today);
+
+  if (expectedToday > 0 && !isDayComplete(habit.recurrence, today, completions, skips)) {
+    const pendingToday = getNextOccurrenceTime(habit, today, completions, skips);
+    if (pendingToday) {
+      return `Next at ${formatTimeOfDay(pendingToday)} today`;
+    }
+  }
+
+  for (let offset = 0; offset <= 14; offset += 1) {
+    const dateKey = addDays(today, offset);
+    const occurrences = getExpectedOccurrences(habit.recurrence, dateKey);
+    if (occurrences.length === 0) continue;
+
+    const time =
+      offset === 0
+        ? getNextOccurrenceTime(habit, dateKey, completions, skips)
+        : (occurrences[0] ?? null);
+    if (!time) continue;
+
+    const timeLabel = formatTimeOfDay(time);
+    if (offset === 0) return `Next at ${timeLabel} today`;
+    if (offset === 1) return `Next at ${timeLabel} tomorrow`;
+    const dayName = format(new Date(`${dateKey}T12:00:00`), "EEEE");
+    return `Next at ${timeLabel} on ${dayName}`;
+  }
+
+  return "No upcoming reminders";
+}
+
+export function getHabitScheduleDetail(habit: Habit): string {
+  const { recurrence } = habit;
+  switch (recurrence.kind) {
+    case "daily":
+      if (recurrence.times.length === 0) return "Daily";
+      return recurrence.times.length > 1
+        ? `Daily at ${recurrence.times.map(formatTimeOfDay).join(", ")}`
+        : `Daily at ${formatTimeOfDay(recurrence.times[0])}`;
+    case "weekly":
+      if (recurrence.times.length === 0) {
+        return getWeeklyDaysLabel(recurrence);
+      }
+      return `${getWeeklyDaysLabel(recurrence)} at ${formatTimeOfDay(recurrence.times[0])}`;
+    case "interval":
+      return `${getIntervalScheduleShort(recurrence)} (${formatTimeOfDay(recurrence.windowStart)} – ${formatTimeOfDay(recurrence.windowEnd)})`;
+  }
+}
+
 export function shouldShowOnToday(
   habit: Habit,
   today: string,
@@ -118,6 +207,7 @@ export function getTodaySectionMeta(
   const complete = isDayComplete(habit.recurrence, today, completions, skips);
   const streak = getDisplayStreak(habit, today);
   const progress = getTodayProgressLabel(habit, today, completions);
+  const progressShort = getTodayProgressShort(habit, today, completions);
   const nextTime = getNextOccurrenceTime(habit, today, completions, skips);
 
   return {
@@ -125,6 +215,7 @@ export function getTodaySectionMeta(
     complete,
     streak,
     progress,
+    progressShort,
     nextTime,
     scheduleLabel: nextTime ? formatTimeOfDay(nextTime) : getPrimaryScheduleLabel(habit),
   };

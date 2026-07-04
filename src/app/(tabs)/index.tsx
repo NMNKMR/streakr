@@ -12,7 +12,7 @@ import {
   useStartSession,
   useStopSession,
 } from "@/hooks/use-habits";
-import { formatDateHeader, getGreeting, getSectionBadge, groupHabitsByKind } from "@/lib/habits/display";
+import { formatDateHeader, getGreeting } from "@/lib/habits/display";
 import { getExpectedOccurrenceCount, isDaySkipped, todayDateKey } from "@/lib/habits/streak";
 import type { Habit } from "@/lib/habits/types";
 import { useTheme } from "@/providers/theme";
@@ -68,16 +68,11 @@ export default function TodayScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <ScreenHeader onCalendarPress={handleCalendarPress} />
-
-        <View style={styles.hero}>
-          <Text style={[typography.bodyMd, { color: colors.textMuted }]}>
-            {getGreeting(now)}
-          </Text>
-          <Text style={[typography.headlineLgMobile, { color: colors.onBackground }]}>
-            Streakr
-          </Text>
-        </View>
+        <ScreenHeader
+          title="Streakr"
+          subtitle={getGreeting(now)}
+          onCalendarPress={handleCalendarPress}
+        />
 
         <PermissionBanner />
 
@@ -97,6 +92,7 @@ export default function TodayScreen() {
             title="Nothing due today"
             description="Create a habit or check back on scheduled days. Your rituals will appear here when they're due."
             ctaLabel="Create Habit"
+            icon="sunny-outline"
           />
         ) : (
           todayHabits.map((habit) => (
@@ -111,10 +107,6 @@ export default function TodayScreen() {
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.marginMobile,
-  },
-  hero: {
-    marginBottom: spacing.lg,
-    gap: 4,
   },
   sectionHeader: {
     flexDirection: "row",

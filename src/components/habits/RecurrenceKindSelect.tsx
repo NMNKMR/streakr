@@ -3,6 +3,7 @@ import { typography } from "@/constants/typography";
 import { getRecurrenceKindLabel } from "@/lib/habits/display";
 import type { RecurrenceKind } from "@/lib/habits/form";
 import { useTheme } from "@/providers/theme";
+import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 const KINDS: RecurrenceKind[] = ["daily", "weekly", "interval"];
@@ -31,21 +32,26 @@ export function RecurrenceKindSelect({ value, onChange }: RecurrenceKindSelectPr
           <Pressable
             key={kind}
             onPress={() => onChange(kind)}
-            style={[
-              styles.segment,
-              active && {
-                backgroundColor: colors.primaryContainer,
-              },
-            ]}
+            style={styles.segmentPressable}
           >
-            <Text
-              style={[
-                typography.labelSm,
-                { color: active ? colors.onPrimary : colors.textMuted },
-              ]}
-            >
-              {getRecurrenceKindLabel(kind)}
-            </Text>
+            {active ? (
+              <LinearGradient
+                colors={[colors.primaryContainer, colors.tertiaryContainer]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.segmentActive}
+              >
+                <Text style={[typography.labelSm, { color: colors.onPrimary }]}>
+                  {getRecurrenceKindLabel(kind)}
+                </Text>
+              </LinearGradient>
+            ) : (
+              <View style={styles.segmentInactive}>
+                <Text style={[typography.labelSm, { color: colors.textMuted }]}>
+                  {getRecurrenceKindLabel(kind)}
+                </Text>
+              </View>
+            )}
           </Pressable>
         );
       })}
@@ -61,8 +67,15 @@ const styles = StyleSheet.create({
     padding: 4,
     gap: 4,
   },
-  segment: {
+  segmentPressable: {
     flex: 1,
+  },
+  segmentActive: {
+    borderRadius: radius.full,
+    paddingVertical: spacing.sm,
+    alignItems: "center",
+  },
+  segmentInactive: {
     borderRadius: radius.full,
     paddingVertical: spacing.sm,
     alignItems: "center",

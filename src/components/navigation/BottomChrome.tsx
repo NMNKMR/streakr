@@ -28,7 +28,10 @@ export function BottomChrome(props: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View pointerEvents="box-none" style={styles.wrapper}>
+    <View
+      pointerEvents="box-none"
+      style={[styles.wrapper, { bottom: insets.bottom }]}
+    >
       <LinearGradient
         colors={
           isDarkMode
@@ -109,7 +112,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 0,
   },
   bottomGradient: {
     position: "absolute",
@@ -133,7 +135,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.xs,
   },
   tabItem: {
     flex: 1,

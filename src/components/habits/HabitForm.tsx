@@ -131,6 +131,7 @@ export function HabitForm({
   const preview = getRemindersPreview(values);
 
   return (
+    <>
     <KeyboardAvoidingView
       style={styles.flex}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -160,7 +161,12 @@ export function HabitForm({
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.section}>
-          <FormSectionLabel>Habit identity</FormSectionLabel>
+          <View style={styles.sectionHeader}>
+            <FormSectionLabel compact>Habit identity</FormSectionLabel>
+            {mode === "edit" && habit ? (
+              <StreakBadge streak={habit.streak} inline />
+            ) : null}
+          </View>
           <GlassCard>
             <View style={styles.identityRow}>
               <Pressable
@@ -181,13 +187,12 @@ export function HabitForm({
                 placeholder="Habit name"
                 placeholderTextColor={colors.textSubtle}
                 style={[
-                  typography.bodyLg,
+                  typography.bodyMd,
                   styles.nameInput,
                   { color: colors.onBackground },
                 ]}
               />
             </View>
-            {mode === "edit" && habit ? <StreakBadge streak={habit.streak} /> : null}
             {errors.name ? (
               <Text style={[typography.labelSm, { color: colors.error, marginTop: spacing.sm }]}>
                 {errors.name}
@@ -283,29 +288,31 @@ export function HabitForm({
           },
         ]}
       >
-        <GradientButton
-          label={mode === "create" ? "Save Habit" : "Save Changes"}
-          onPress={handleSave}
-          disabled={hasErrors && touched}
-          loading={isSubmitting}
-        />
-        {mode === "edit" && onDelete ? (
-          <Pressable
-            onPress={() => setShowDeleteConfirm(true)}
-            disabled={isDeleting}
-            style={styles.deleteButton}
-          >
-            <Text style={[typography.labelMd, { color: colors.error }]}>Delete Habit</Text>
-          </Pressable>
-        ) : null}
+        <View style={styles.footerActions}>
+          <GradientButton
+            label={mode === "create" ? "Save Habit" : "Save Changes"}
+            onPress={handleSave}
+            disabled={hasErrors && touched}
+            loading={isSubmitting}
+            style={styles.footerPrimary}
+          />
+          {mode === "edit" && onDelete ? (
+            <Pressable
+              onPress={() => setShowDeleteConfirm(true)}
+              disabled={isDeleting}
+              style={({ pressed }) => [
+                styles.footerOutline,
+                {
+                  borderColor: colors.glassBorder,
+                  opacity: pressed || isDeleting ? 0.7 : 1,
+                },
+              ]}
+            >
+              <Text style={[typography.labelMd, { color: colors.error }]}>Delete</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
-
-      <EmojiPickerSheet
-        visible={showEmojiPicker}
-        selected={values.emoji}
-        onSelect={(emoji) => patch({ emoji })}
-        onClose={() => setShowEmojiPicker(false)}
-      />
 
       <Modal visible={showDeleteConfirm} transparent animationType="fade">
         <View style={styles.modalBackdrop}>
@@ -333,6 +340,14 @@ export function HabitForm({
         </View>
       </Modal>
     </KeyboardAvoidingView>
+
+    <EmojiPickerSheet
+      visible={showEmojiPicker}
+      selected={values.emoji}
+      onSelect={(emoji) => patch({ emoji })}
+      onClose={() => setShowEmojiPicker(false)}
+    />
+    </>
   );
 }
 
@@ -363,6 +378,12 @@ const styles = StyleSheet.create({
   section: {
     gap: spacing.xs,
   },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
   identityRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -391,11 +412,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.marginMobile,
     paddingTop: spacing.md,
     borderTopWidth: 1,
+  },
+  footerActions: {
+    flexDirection: "row",
+    alignItems: "stretch",
     gap: spacing.sm,
   },
-  deleteButton: {
+  footerPrimary: {
+    flex: 1,
+  },
+  footerOutline: {
+    flex: 1,
+    borderRadius: radius.full,
+    borderWidth: 1,
     alignItems: "center",
-    paddingVertical: spacing.sm,
+    justifyContent: "center",
+    paddingVertical: 16,
   },
   modalBackdrop: {
     flex: 1,

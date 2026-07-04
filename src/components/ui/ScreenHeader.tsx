@@ -1,33 +1,63 @@
 import { radius, spacing } from "@/constants/spacing";
+import { typography } from "@/constants/typography";
 import { useTheme } from "@/providers/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type ScreenHeaderProps = {
-  showLogo?: boolean;
+  title: string;
+  subtitle?: string;
+  /** When true, title renders above subtitle (e.g. Habits). Default: subtitle above title. */
+  titleFirst?: boolean;
   onCalendarPress?: () => void;
 };
 
-export function ScreenHeader({ showLogo = true, onCalendarPress }: ScreenHeaderProps) {
+export function ScreenHeader({
+  title,
+  subtitle,
+  titleFirst = false,
+  onCalendarPress,
+}: ScreenHeaderProps) {
   const { colors } = useTheme();
+
+  const titleNode = (
+    <Text style={[typography.headlineLgMobile, { color: colors.onBackground }]}>
+      {title}
+    </Text>
+  );
+
+  const subtitleNode = subtitle ? (
+    <Text style={[typography.bodyMd, { color: colors.textMuted }]}>
+      {subtitle}
+    </Text>
+  ) : null;
 
   return (
     <View style={styles.row}>
-      {showLogo ? (
-        <Image
-          source={require("@/assets/icons/brand-logo.png")}
-          style={styles.logo}
-          contentFit="contain"
-        />
-      ) : (
-        <View style={styles.logoSpacer} />
-      )}
+      <View style={styles.copy}>
+        {titleFirst ? (
+          <>
+            {titleNode}
+            {subtitleNode}
+          </>
+        ) : (
+          <>
+            {subtitleNode}
+            {titleNode}
+          </>
+        )}
+      </View>
 
       <Pressable
         accessibilityLabel="Open calendar"
         onPress={onCalendarPress}
-        style={[styles.calendarButton, { backgroundColor: colors.glassSurface, borderColor: colors.glassBorder }]}
+        style={[
+          styles.calendarButton,
+          {
+            backgroundColor: colors.glassSurface,
+            borderColor: colors.glassBorder,
+          },
+        ]}
       >
         <Ionicons name="calendar-outline" size={20} color={colors.onSurface} />
       </Pressable>
@@ -38,16 +68,14 @@ export function ScreenHeader({ showLogo = true, onCalendarPress }: ScreenHeaderP
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
+    gap: spacing.md,
     marginBottom: spacing.lg,
   },
-  logo: {
-    width: 120,
-    height: 36,
-  },
-  logoSpacer: {
-    width: 120,
+  copy: {
+    flex: 1,
+    gap: 2,
   },
   calendarButton: {
     width: 44,
@@ -56,5 +84,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
+    flexShrink: 0,
   },
 });

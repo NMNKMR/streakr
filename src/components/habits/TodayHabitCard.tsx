@@ -114,31 +114,37 @@ export function TodayHabitCard({
           </View>
 
           <View style={styles.content}>
-            <View style={styles.titleRow}>
-              <Text style={[typography.labelMd, { color: colors.onSurface }]}>
-                {habit.name}
-              </Text>
-              <Text style={[typography.labelSm, { color: colors.textMuted }]}>
-                {meta.scheduleLabel}
-              </Text>
-            </View>
+            <Text style={[typography.labelMd, { color: colors.onSurface }]} numberOfLines={1}>
+              {habit.name}
+            </Text>
 
-            <StreakBadge streak={meta.streak} />
+            <View style={styles.metaRow}>
+              {!meta.complete ? (
+                <View style={styles.metaItem}>
+                  <Ionicons name="alarm-outline" size={13} color={colors.textMuted} />
+                  <Text style={[typography.labelSm, { color: colors.textMuted }]}>
+                    {meta.scheduleLabel}
+                  </Text>
+                </View>
+              ) : null}
 
-            {meta.progress ? (
-              <Text style={[typography.labelSm, { color: colors.secondaryContainer, marginTop: 4 }]}>
-                {meta.progress}
-              </Text>
-            ) : null}
+              <StreakBadge streak={meta.streak} inline compact />
 
-            {habit.isActive ? (
-              <View style={styles.progressRow}>
-                <Ionicons name="sync-outline" size={12} color={colors.tertiaryContainer} />
-                <Text style={[typography.labelXs, { color: colors.tertiaryContainer }]}>
-                  IN PROGRESS
+              {meta.progressShort ? (
+                <Text style={[typography.labelSm, { color: colors.secondaryContainer }]}>
+                  {meta.progressShort}
                 </Text>
-              </View>
-            ) : null}
+              ) : null}
+
+              {habit.isActive ? (
+                <View style={styles.metaItem}>
+                  <Ionicons name="sync-outline" size={12} color={colors.tertiaryContainer} />
+                  <Text style={[typography.labelXs, { color: colors.tertiaryContainer }]}>
+                    Active
+                  </Text>
+                </View>
+              ) : null}
+            </View>
           </View>
         </Pressable>
 
@@ -175,18 +181,18 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    gap: 4,
   },
-  titleRow: {
+  metaRow: {
     flexDirection: "row",
-    alignItems: "baseline",
+    alignItems: "center",
     flexWrap: "wrap",
     gap: spacing.sm,
   },
-  progressRow: {
+  metaItem: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    marginTop: 4,
   },
   plusShadow: {
     shadowOffset: { width: 0, height: 6 },

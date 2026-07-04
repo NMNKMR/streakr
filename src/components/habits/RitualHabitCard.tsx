@@ -2,6 +2,7 @@ import { radius, spacing } from "@/constants/spacing";
 import { typography } from "@/constants/typography";
 import {
   getIntervalReminderCount,
+  getIntervalScheduleShort,
   getPrimaryScheduleLabel,
   getWeekdayDots,
 } from "@/lib/habits/display";
@@ -12,13 +13,48 @@ import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { StreakBadge } from "@/components/habits/StreakBadge";
 import { GlassCard } from "@/components/ui/GlassCard";
 
 type RitualHabitCardProps = {
   habit: Habit;
   today: string;
 };
+
+type MetaChipProps = {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  accent?: boolean;
+};
+
+function MetaChip({ icon, label, accent = false }: MetaChipProps) {
+  const { colors } = useTheme();
+
+  return (
+    <View
+      style={[
+        styles.chip,
+        {
+          backgroundColor: accent ? `${colors.primaryContainer}22` : colors.glassSurface,
+          borderColor: accent ? `${colors.primaryContainer}55` : colors.glassBorder,
+        },
+      ]}
+    >
+      <Ionicons
+        name={icon}
+        size={11}
+        color={accent ? colors.primary : colors.textMuted}
+      />
+      <Text
+        style={[
+          typography.labelXs,
+          { color: accent ? colors.primary : colors.textMuted },
+        ]}
+      >
+        {label}
+      </Text>
+    </View>
+  );
+}
 
 export function RitualHabitCard({ habit, today }: RitualHabitCardProps) {
   const { colors } = useTheme();
@@ -34,7 +70,7 @@ export function RitualHabitCard({ habit, today }: RitualHabitCardProps) {
             </View>
 
             <View style={styles.content}>
-              <Text style={[typography.labelMd, { color: colors.onSurface }]}>
+              <Text style={[typography.labelMd, { color: colors.onSurface }]} numberOfLines={1}>
                 {habit.name}
               </Text>
 
@@ -67,24 +103,42 @@ export function RitualHabitCard({ habit, today }: RitualHabitCardProps) {
                       </Text>
                     </View>
                   ))}
+                  {streak > 0 ? (
+                    <MetaChip icon="flame" label={String(streak)} accent />
+                  ) : null}
+                </View>
+              ) : habit.recurrence.kind === "interval" ? (
+                <View style={styles.intervalMeta}>
+                  <Text
+                    style={[typography.labelSm, styles.intervalSchedule, { color: colors.textMuted }]}
+                    numberOfLines={1}
+                  >
+                    {getIntervalScheduleShort(habit.recurrence)}
+                  </Text>
+                  <View style={styles.chipRow}>
+                    <MetaChip
+                      icon="notifications-outline"
+                      label={`${getIntervalReminderCount(habit.recurrence)}/day`}
+                    />
+                    {streak > 0 ? (
+                      <MetaChip icon="flame" label={String(streak)} accent />
+                    ) : null}
+                  </View>
                 </View>
               ) : (
-                <>
-                  <Text style={[typography.labelSm, { color: colors.textMuted, marginTop: 4 }]}>
+                <View style={styles.metaRow}>
+                  <Text style={[typography.labelSm, { color: colors.textMuted }]}>
                     {getPrimaryScheduleLabel(habit)}
                   </Text>
-                  {habit.recurrence.kind === "interval" ? (
-                    <Text style={[typography.labelXs, { color: colors.primary, marginTop: 4 }]}>
-                      {getIntervalReminderCount(habit.recurrence)} reminders/day
-                    </Text>
+                  {streak > 0 ? (
+                    <MetaChip icon="flame" label={String(streak)} accent />
                   ) : null}
-                  <StreakBadge streak={streak} />
-                </>
+                </View>
               )}
             </View>
 
-            <View style={[styles.addGhost, { borderColor: colors.glassBorder }]}>
-              <Ionicons name="add" size={20} color={colors.onSurface} />
+            <View style={[styles.chevron, { borderColor: colors.glassBorder }]}>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
             </View>
           </View>
         </GlassCard>
@@ -114,11 +168,41 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    gap: 4,
+  },
+  intervalMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  intervalSchedule: {
+    flexShrink: 1,
+  },
+  chipRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    flexShrink: 0,
+  },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: radius.full,
+    borderWidth: 1,
+  },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
   },
   weekdayRow: {
     flexDirection: "row",
+    alignItems: "center",
     gap: 6,
-    marginTop: spacing.sm,
+    marginTop: 2,
   },
   weekdayDot: {
     width: 22,
@@ -128,9 +212,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  addGhost: {
-    width: 40,
-    height: 40,
+  chevron: {
+    width: 36,
+    height: 36,
     borderRadius: radius.full,
     borderWidth: 1,
     alignItems: "center",

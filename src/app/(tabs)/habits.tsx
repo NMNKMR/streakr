@@ -65,16 +65,12 @@ export default function HabitsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <ScreenHeader onCalendarPress={handleCalendarPress} />
-
-        <View style={styles.hero}>
-          <Text style={[typography.headlineLgMobile, { color: colors.onBackground }]}>
-            Your Rituals
-          </Text>
-          <Text style={[typography.bodyMd, { color: colors.textMuted }]}>
-            Build your best self.
-          </Text>
-        </View>
+        <ScreenHeader
+          title="Your Rituals"
+          subtitle="Build your best self."
+          titleFirst
+          onCalendarPress={handleCalendarPress}
+        />
 
         {isLoading ? (
           <ActivityIndicator color={colors.primary} />
@@ -95,10 +91,6 @@ export default function HabitsScreen() {
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.marginMobile,
-  },
-  hero: {
-    marginBottom: spacing.xxl,
-    gap: 4,
   },
   section: {
     marginBottom: spacing.xxl,

@@ -1,24 +1,20 @@
+import { GlassBottomSheet, TIME_PICKER_SNAP_POINTS } from "@/components/ui/GlassBottomSheet";
 import { radius, spacing } from "@/constants/spacing";
 import { typography } from "@/constants/typography";
 import { formatTimeOfDay } from "@/lib/habits/display";
 import type { TimeOfDay } from "@/lib/habits/types";
 import { useTheme } from "@/providers/theme";
+import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
-import { useMemo, useState } from "react";
-import {
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useEffect, useMemo, useState } from "react";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 type TimePickerFieldProps = {
   value: TimeOfDay;
   onChange: (time: TimeOfDay) => void;
   label?: string;
+  /** Wider pill for interval window fields */
+  stretch?: boolean;
 };
 
 function toDate(time: TimeOfDay): Date {
@@ -27,27 +23,34 @@ function toDate(time: TimeOfDay): Date {
   return date;
 }
 
-export function TimePickerField({ value, onChange, label }: TimePickerFieldProps) {
+export function TimePickerField({
+  value,
+  onChange,
+  label,
+  stretch = false,
+}: TimePickerFieldProps) {
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
   const [visible, setVisible] = useState(false);
   const [draft, setDraft] = useState(toDate(value));
 
   const displayDate = useMemo(() => toDate(value), [value.hour, value.minute]);
 
-  const openPicker = () => {
-    setDraft(displayDate);
-    setVisible(true);
-  };
+  useEffect(() => {
+    if (visible) setDraft(displayDate);
+  }, [visible, displayDate]);
+
+  const openPicker = () => setVisible(true);
+
+  const closePicker = () => setVisible(false);
 
   const commitDraft = () => {
     onChange({ hour: draft.getHours(), minute: draft.getMinutes() });
-    setVisible(false);
+    closePicker();
   };
 
   const handleChange = (_event: DateTimePickerEvent, selected?: Date) => {
     if (Platform.OS === "android") {
-      setVisible(false);
+      closePicker();
       if (selected) {
         onChange({ hour: selected.getHours(), minute: selected.getMinutes() });
       }
@@ -58,57 +61,53 @@ export function TimePickerField({ value, onChange, label }: TimePickerFieldProps
 
   return (
     <>
-      <View style={styles.wrapper}>
+      <View style={[styles.wrapper, stretch && styles.wrapperStretch]}>
         {label ? (
-          <Text style={[typography.labelSm, { color: colors.textMuted, marginBottom: spacing.xs }]}>
+          <Text style={[typography.labelSm, styles.label, { color: colors.textMuted }]}>
             {label}
           </Text>
         ) : null}
         <Pressable
           onPress={openPicker}
-          style={[
-            styles.field,
+          style={({ pressed }) => [
+            styles.chip,
+            stretch && styles.chipStretch,
             {
               backgroundColor: colors.glassSurface,
               borderColor: colors.glassBorder,
+              opacity: pressed ? 0.85 : 1,
             },
           ]}
         >
-          <Text style={[typography.bodyMd, { color: colors.onBackground }]}>
+          <Ionicons name="time-outline" size={16} color={colors.primary} />
+          <Text style={[typography.labelMd, { color: colors.onBackground }]}>
             {formatTimeOfDay(value)}
           </Text>
         </Pressable>
       </View>
 
       {Platform.OS === "ios" ? (
-        <Modal visible={visible} transparent animationType="slide">
-          <Pressable style={styles.backdrop} onPress={() => setVisible(false)} />
-          <View
-            style={[
-              styles.sheet,
-              {
-                backgroundColor: colors.surfaceContainerHigh,
-                paddingBottom: insets.bottom + spacing.md,
-              },
-            ]}
-          >
-            <View style={styles.sheetHeader}>
-              <Pressable onPress={() => setVisible(false)}>
-                <Text style={[typography.labelMd, { color: colors.textMuted }]}>Cancel</Text>
-              </Pressable>
-              <Pressable onPress={commitDraft}>
-                <Text style={[typography.labelMd, { color: colors.primary }]}>Done</Text>
-              </Pressable>
-            </View>
-            <DateTimePicker
-              value={draft}
-              mode="time"
-              display="spinner"
-              onChange={handleChange}
-              themeVariant="dark"
-            />
+        <GlassBottomSheet visible={visible} onClose={closePicker} snapPoints={TIME_PICKER_SNAP_POINTS}>
+          <View style={styles.sheetHeader}>
+            <Pressable onPress={closePicker} hitSlop={8}>
+              <Text style={[typography.labelMd, { color: colors.textMuted }]}>Cancel</Text>
+            </Pressable>
+            <Text style={[typography.labelMd, { color: colors.onBackground }]}>
+              Pick a time
+            </Text>
+            <Pressable onPress={commitDraft} hitSlop={8}>
+              <Text style={[typography.labelMd, { color: colors.primary }]}>Done</Text>
+            </Pressable>
           </View>
-        </Modal>
+          <DateTimePicker
+            value={draft}
+            mode="time"
+            display="spinner"
+            onChange={handleChange}
+            themeVariant="dark"
+            style={styles.picker}
+          />
+        </GlassBottomSheet>
       ) : visible ? (
         <DateTimePicker
           value={displayDate}
@@ -122,28 +121,34 @@ export function TimePickerField({ value, onChange, label }: TimePickerFieldProps
 
 const styles = StyleSheet.create({
   wrapper: {
+    alignSelf: "flex-start",
+  },
+  wrapperStretch: {
+    alignSelf: "stretch",
     flex: 1,
   },
-  field: {
-    borderRadius: radius.md,
+  label: {
+    marginBottom: spacing.xs,
+  },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    borderRadius: radius.full,
     borderWidth: 1,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    alignItems: "center",
   },
-  backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-  },
-  sheet: {
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
-    paddingTop: spacing.md,
+  chipStretch: {
+    justifyContent: "center",
   },
   sheetHeader: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: spacing.md,
     marginBottom: spacing.sm,
+  },
+  picker: {
+    alignSelf: "center",
   },
 });
