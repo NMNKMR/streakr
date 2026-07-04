@@ -4,12 +4,16 @@ import { ScreenBackground } from "@/components/ui/ScreenBackground";
 import { radius, spacing } from "@/constants/spacing";
 import { typography } from "@/constants/typography";
 import { usePermission } from "@/hooks/use-permission";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
+import { getPushRegistrationMessage } from "@/lib/notifications/push";
 import { useTheme } from "@/providers/theme";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
+import { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -70,6 +74,15 @@ export default function SettingsScreen() {
     requestPermission,
     openSettings,
   } = usePermission();
+  const {
+    token: pushToken,
+    isRegistering,
+    registration,
+    registrationMessage,
+    register: registerPush,
+    copyToken,
+  } = usePushNotifications();
+  const [copied, setCopied] = useState(false);
 
   const { label, detail, tone } = notificationStatusCopy(status);
 
@@ -210,9 +223,103 @@ export default function SettingsScreen() {
             <View style={[styles.grantedNote, { backgroundColor: colors.glassSurface }]}>
               <Ionicons name="checkmark-circle-outline" size={16} color={colors.primaryContainer} />
               <Text style={[typography.labelSm, { color: colors.textMuted, flex: 1 }]}>
-                Local reminders are active. Push notifications coming soon.
+                Local reminders are active on this device.
               </Text>
             </View>
+          ) : null}
+        </GlassCard>
+
+        <FormSectionLabel>Push Token</FormSectionLabel>
+        <GlassCard style={styles.card}>
+          <Text style={[typography.bodyMd, { color: colors.textMuted }]}>
+            Copy this token to send a test push from{" "}
+            <Text style={{ color: colors.primary }}>expo.dev/notifications</Text>.
+          </Text>
+
+          {pushToken ? (
+            <View
+              style={[
+                styles.tokenBox,
+                {
+                  backgroundColor: colors.glassSurface,
+                  borderColor: colors.glassBorder,
+                },
+              ]}
+            >
+              <Text
+                selectable
+                style={[typography.labelSm, styles.tokenText, { color: colors.onSurface }]}
+              >
+                {pushToken}
+              </Text>
+            </View>
+          ) : (
+            <Text style={[typography.bodyMd, styles.tokenPlaceholder, { color: colors.textSubtle }]}>
+              {isRegistering
+                ? "Registering push token…"
+                : registrationMessage ?? "No push token yet."}
+            </Text>
+          )}
+
+          <View style={styles.pushActions}>
+            <Pressable
+              onPress={async () => {
+                const ok = await copyToken();
+                if (ok) {
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }
+              }}
+              disabled={!pushToken}
+              style={[
+                styles.actionButton,
+                styles.actionButtonOutline,
+                {
+                  borderColor: colors.glassBorder,
+                  opacity: pushToken ? 1 : 0.45,
+                  flex: 1,
+                },
+              ]}
+            >
+              <Ionicons
+                name={copied ? "checkmark-outline" : "copy-outline"}
+                size={16}
+                color={colors.primary}
+              />
+              <Text style={[typography.labelMd, { color: colors.primary }]}>
+                {copied ? "Copied" : "Copy Token"}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => {
+                void registerPush().then((result) => {
+                  if (!result.ok) {
+                    Alert.alert("Push registration failed", getPushRegistrationMessage(result));
+                  }
+                });
+              }}
+              disabled={isRegistering}
+              style={[
+                styles.actionButton,
+                { backgroundColor: colors.primaryContainer, flex: 1 },
+              ]}
+            >
+              {isRegistering ? (
+                <ActivityIndicator color={colors.onPrimary} size="small" />
+              ) : (
+                <>
+                  <Ionicons name="refresh-outline" size={16} color={colors.onPrimary} />
+                  <Text style={[typography.labelMd, { color: colors.onPrimary }]}>Refresh</Text>
+                </>
+              )}
+            </Pressable>
+          </View>
+
+          {registration && !registration.ok ? (
+            <Text style={[typography.labelSm, styles.pushError, { color: colors.error }]}>
+              {registrationMessage}
+            </Text>
           ) : null}
         </GlassCard>
 
@@ -326,6 +433,26 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     padding: spacing.md,
     borderRadius: radius.md,
+  },
+  tokenBox: {
+    marginTop: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+  },
+  tokenText: {
+    fontFamily: "Inter_400Regular",
+  },
+  tokenPlaceholder: {
+    marginTop: spacing.md,
+  },
+  pushActions: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  pushError: {
+    marginTop: spacing.sm,
   },
   aboutCard: {
     marginBottom: spacing.lg,

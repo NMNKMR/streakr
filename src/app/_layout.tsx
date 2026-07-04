@@ -1,5 +1,6 @@
 import ThemedStatusBar from "@/components/ThemedStatusBar";
 import { useNotificationHandler } from "@/hooks/use-notification-handler";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { initDatabase } from "@/lib/habits/storage";
 import {
   createAndroidChannel,
@@ -71,6 +72,7 @@ function ThemedNavigation() {
   const { colors } = useTheme();
 
   useNotificationHandler();
+  usePushNotifications({ autoRegister: true });
 
   useEffect(() => {
     SystemUI.setBackgroundColorAsync(colors.background);

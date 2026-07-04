@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "40691872055",
+    "project_id": "streakr-27503",
+    "storage_bucket": "streakr-27503.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:40691872055:android:def295b34ccbcc5778eab2",
+        "android_client_info": {
+          "package_name": "com.namangoel.streakr.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhqthIuFA0oAqLY9lzXo9X5ry3EayF5W4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

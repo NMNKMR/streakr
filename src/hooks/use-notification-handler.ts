@@ -1,5 +1,5 @@
 import type { NotificationPayload } from "@/lib/habits/types";
-import { parseNotificationPayload } from "@/lib/notifications/setup";
+import { parseNotificationPayload, registerTapHandler } from "@/lib/notifications/setup";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
@@ -14,6 +14,14 @@ function navigateToHabit(
 export function useNotificationHandler() {
   const router = useRouter();
   const lastResponse = Notifications.useLastNotificationResponse();
+
+  useEffect(() => {
+    const subscription = registerTapHandler((payload) => {
+      navigateToHabit(router, payload);
+    });
+
+    return () => subscription.remove();
+  }, [router]);
 
   useEffect(() => {
     if (!lastResponse) return;
