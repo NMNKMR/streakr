@@ -42,6 +42,9 @@ app-example
 /ios
 /android
 
+# Context
+/context/
+
 # Firebase (client config — safe to commit; do NOT commit the service account key)
 # google-services.json lives at project root after Firebase setup
 
