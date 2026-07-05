@@ -36,10 +36,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     adaptiveIcon: {
-      backgroundColor: "#E6F4FE",
-      foregroundImage: "./assets/icons/brand-logo.png",
-      backgroundImage: "./assets/icons/brand-logo.png",
-      monochromeImage: "./assets/icons/brand-logo.png",
+      backgroundColor: "#FFFFFF",
+      foregroundImage: "./assets/icons/android-icon-foreground.png",
+      backgroundImage: "./assets/icons/android-icon-background.png",
+      monochromeImage: "./assets/icons/android-icon-monochrome.png",
     },
     predictiveBackGestureEnabled: false,
     package: getPackageName(),
@@ -54,17 +54,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       "expo-notifications",
       {
-        icon: "./assets/icons/streakr-notify.png",
+        icon: "./assets/icons/streakr-notify-small.png",
         defaultChannel: "default",
       },
     ],
     [
       "expo-splash-screen",
       {
-        backgroundColor: "#208AEF",
-        android: {
-          image: "./assets/icons/brand-logo.png",
-          imageWidth: 76,
+        backgroundColor: "#FFFFFF",
+        image: "./assets/icons/android-icon-foreground.png",
+        imageWidth: 200,
+        dark: {
+          image: "./assets/icons/android-icon-foreground.png",
+          backgroundColor: "#000000",
         },
       },
     ],
