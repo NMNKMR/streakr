@@ -2,13 +2,9 @@
 
 A mobile habit tracker that helps you build consistent routines through streaks, flexible scheduling, timed sessions, and reminders — all stored locally on your device.
 
-**Repository:** [github.com/NMNKMR/streakr](https://github.com/NMNKMR/streakr)
-
 ---
 
 ## Demo Video
-
-[Watch the demo](https://youtu.be/REPLACE_WITH_YOUR_VIDEO_ID) *(replace this link with your uploaded demo)*
 
 ---
 
@@ -21,8 +17,6 @@ A mobile habit tracker that helps you build consistent routines through streaks,
 | Settings | New Habit | Notifications |
 |:--------:|:---------:|:-------------:|
 | ![Settings](./assets/screenshots/settings.png) | ![New habit form](./assets/screenshots/new-habit.png) | ![Push notification](./assets/screenshots/notification.png) |
-
-> Add PNG screenshots under `assets/screenshots/` with the filenames above, or update the paths in this table.
 
 ---
 
