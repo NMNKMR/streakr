@@ -4,19 +4,21 @@ A mobile habit tracker that helps you build consistent routines through streaks,
 
 ---
 
-## Demo Video
-
----
-
 ## Screenshots
 
-| Today | Habits | Quick Action |
-|:-----:|:------:|:------------:|
-| ![Today screen](./assets/screenshots/today.png) | ![Habits screen](./assets/screenshots/habits.png) | ![Quick Action screen](./assets/screenshots/quick-action.png) |
+| Today Empty | Today | Habits | Quick Action | 
+|:-----------:|:-----:|:------:|:------------:|
+| <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/99fced80-1c14-4944-8586-ff7124346509" /> | <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/531374c9-8488-4ee8-abbb-1bc53102f7bd" /> | <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/da1564c8-7b25-42e2-9f1e-be6dc488ab4c" /> | <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/ed476fc5-de0f-4e3e-bd57-3701e3b60516" /> |
 
-| Settings | New Habit | Notifications |
-|:--------:|:---------:|:-------------:|
-| ![Settings](./assets/screenshots/settings.png) | ![New habit form](./assets/screenshots/new-habit.png) | ![Push notification](./assets/screenshots/notification.png) |
+
+| Settings | Habit Daily | Weekly | Interval |
+|:--------:|:-----------:|:------:|:--------:|
+| <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/9ae5ae7f-9925-4166-8961-806e1609c952" /> | <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/0e70ce15-b206-4526-a313-5d8429cd1de4" /> | <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/c8b414c2-dc60-4043-8b75-dd8817fc467d" /> | <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/f4d2b7c6-6e29-49b5-b105-915a3ebc1be9" /> |
+
+| Local Notification | Push Notification |
+|:------------------:|:-----------------:|
+| <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/fb63135c-b38a-4a39-887a-d5e6718b26af" /> | <img width="300" height="600" alt="image" src="https://github.com/user-attachments/assets/6b73d9cc-211a-4e65-9cb9-fb471aad784a" /> |
+
 
 ---
 
